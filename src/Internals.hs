@@ -100,48 +100,17 @@ levCells a level mx = out
           , S.index (S.index types k) l]
       where
       c = S.index (S.index cells k) l - 1
-    --             unsigned c = cells[k][l]-1;
-    --             out[0][count] = c % (nx-1) + 1;
-    --             out[1][count] = (c / (nx-1)) % (ny-1) + 1;
-    --             out[2][count] = c / ((nx-1) * (ny-1)) + 1;
-    --             out[3][count] = types[k][l];
-    --     unsigned** cells = malloc((nz-1) * sizeof(unsigned*));
---     unsigned** types = malloc((nz-1) * sizeof(unsigned*));
---     size_t** bottomTypes = faceType(toMatrix(A, nx, ny, 0), nx, ny, level, max);
---     size_t totallength = 0;
---     unsigned lengths[nz-1];
---     for(unsigned k=0; k<nz-1; k++){
---         size_t** topTypes = faceType(toMatrix(A, nx, ny, k+1), nx, ny, level, max);
---         size_t** cellTypes =
---             matricialSum(bottomTypes, scaleMatrix(16, topTypes, nx-1, ny-1), nx-1, ny-1);
---         unsigned length;
---         unsigned** goodcells01 = whichIndicesAndItems(cellTypes, nx-1, ny-1, &length);
---         cells[k] = malloc(length * sizeof(unsigned));
---         types[k] = malloc(length * sizeof(unsigned));
---         for(unsigned l=0; l<length; l++){
---             cells[k][l] = goodcells01[0][l] + (nx-1)*(ny-1)*k + 1;
---             types[k][l] = goodcells01[1][l];
---         }
---         bottomTypes = topTypes;
---         lengths[k] = length;
---         totallength += (size_t) length;
---     }
---     unsigned** out = malloc(4 * sizeof(unsigned*));
---     out[0] = malloc(totallength * sizeof(unsigned));
---     out[1] = malloc(totallength * sizeof(unsigned));
---     out[2] = malloc(totallength * sizeof(unsigned));
---     out[3] = malloc(totallength * sizeof(unsigned));
---     size_t count=0;
---     for(unsigned k=0; k<nz-1; k++){
---         for(unsigned l=0; l<lengths[k]; l++){
---             unsigned c = cells[k][l]-1;
---             out[0][count] = c % (nx-1) + 1;
---             out[1][count] = (c / (nx-1)) % (ny-1) + 1;
---             out[2][count] = c / ((nx-1) * (ny-1)) + 1;
---             out[3][count] = types[k][l];
---             count++;
---         }
---     }
---     *outnrow = totallength;
---     return out;
--- }
+
+getBasic1 :: Vector Int -> Matrix Int -> Matrix Int
+getBasic1 r vivjvk = elementwiseUnsafe (+) k1 k2
+  where
+  nR = UV.length r
+  cube1 = matrix nR 3 (\(i,j) -> getElem (r ! (i-1)) j vivjvk)
+  k1 = kro1 indexArray nR
+  k2 = kro2 cube1 8
+
+-- r :: Vector Int
+-- r = UV.fromList [2,2,3,4]
+--
+-- v :: Matrix Int
+-- v = fromLists [[2,1,1],[2,1,1],[1,2,1],[2,2,1]]

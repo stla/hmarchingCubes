@@ -1,4 +1,5 @@
 module Tables where
+import           Data.Matrix
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as UV
 
@@ -261,8 +262,10 @@ caseRotationFlip = V.fromList (map UV.fromList
     [2, 19, -1],
     [1, 24, -1]] )
 
-indexArray :: V.Vector (UV.Vector Int)
-indexArray = V.fromList (map UV.fromList
+-- indexArray :: V.Vector (UV.Vector Int)
+-- indexArray = V.fromList (map UV.fromList
+indexArray :: Matrix Int
+indexArray = fromLists
   [[0, 0, 0],
    [1, 0, 0],
    [1, 1, 0],
@@ -270,7 +273,7 @@ indexArray = V.fromList (map UV.fromList
    [0, 0, 1],
    [1, 0, 1],
    [1, 1, 1],
-   [0, 1, 1]] )
+   [0, 1, 1]] 
 
 -- edgesLengths :: UV.Vector Int
 -- edgesLengths = UV.fromList
