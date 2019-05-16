@@ -1,0 +1,27 @@
+name:                marchingCubes
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/marchingCubes#readme
+license:             GPL-3
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2019 Author name here
+category:            Algorithm
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Utils
+  build-depends:       base >= 4.7 && < 5
+                     , matrix
+                     , vector
+                     , array
+                     , containers
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/marchingCubes
