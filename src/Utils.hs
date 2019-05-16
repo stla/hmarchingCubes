@@ -6,7 +6,6 @@ import           Data.Matrix        hiding ((!))
 import           Data.Sequence      (Seq, (|>), (><))
 import qualified Data.Sequence      as S
 import qualified Data.Vector        as V
-import Data.Foldable (foldl')
 
 mymat :: Matrix Double
 mymat = fromLists [[1,2,3],[4,5,6],[7,8,9]]
@@ -17,8 +16,12 @@ mymat' = fromLists [[0,2,3],[4,5,6],[7,8,256]]
 myarr :: Array (Int,Int,Int) Double
 myarr = listArray ((0,0,0),(3-1,3-1,2-1)) (map fromIntegral [1 .. 18])
 
-levelMatrix :: Real a => Matrix a -> a -> Bool -> Matrix Bool
-levelMatrix mtrx level strict = mapPos (\_ x -> lt x) mtrx
+myarr2 :: Array (Int,Int,Int) Double
+myarr2 = listArray ((0,0,0),(3-1,3-1,2-1)) [1,10,4,13,7,16,2,11,5,14,8,17,3,12,6,15,9,18]
+
+
+levelMatrix :: Real a => Matrix a -> a -> Bool -> Matrix Int
+levelMatrix mtrx level strict = mapPos (\_ x -> if lt x then 1 else 0) mtrx
   where
   lt = if strict then (<) level else (<=) level
 
@@ -27,12 +30,12 @@ arrayToMatrix arr k = matrix (nx+1) (ny+1) (\(i,j) -> arr ! (i-1,j-1,k))
   where
   (_, (nx,ny,_)) = bounds arr
 
-whichIndicesAndItems :: Matrix Int -> Seq ((Int,Int),Int)
+whichIndicesAndItems :: Matrix Int -> Seq (Int,Int)
 whichIndicesAndItems mtrx = go 1 S.empty
   where
   m = nrows mtrx + 1
   n = ncols mtrx + 1
-  go :: Int -> Seq ((Int,Int),Int) -> Seq ((Int,Int),Int)
+  go :: Int -> Seq (Int,Int) -> Seq (Int,Int)
   go j !out
     | j == n = out
     | otherwise = go (j+1) (inner 1 j out)
@@ -41,7 +44,7 @@ whichIndicesAndItems mtrx = go 1 S.empty
     | otherwise = inner (i+1) j out'
         where
         out' = let x = getElem i j mtrx in
-               if x>0 && x<255 then out |> ((i,j),x) else out
+               if x>0 && x<255 then out |> ((j-1)*(m-1)+i-1,x) else out
 
 kro1 :: Matrix Int -> Int -> Matrix Int
 kro1 mtrx n = matrix p ny f
