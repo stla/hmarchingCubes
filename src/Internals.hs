@@ -126,3 +126,19 @@ getBasic2 a level cubeco = UV.fromList values
 
 getTcase :: Vector Int -> Vector Int
 getTcase types = UV.fromList [crf ! (types ! i) | i <- [0 .. UV.length types - 1]]
+
+getR :: Vector Int -> Vector Int
+getR tcase = UV.fromList $ F.toList $ go 0 S.empty
+  where
+  n = UV.length tcase
+  go :: Int -> Seq Int -> Seq Int
+  go i !out
+    | i == n = out
+    | otherwise =
+      if tc == 1 || tc==2 || tc==5 || tc==8 || tc==9 || tc==11 || tc==14
+        then
+          go (i+1) (out |> i)
+        else
+          go (i+1) out
+        where
+        tc = tcase ! i
