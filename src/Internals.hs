@@ -2,6 +2,8 @@
 module Internals where
 import           Data.Array.Unboxed  hiding ((!))
 import qualified Data.Array.Unboxed  as A
+import           Data.Bits           (shiftL)
+import qualified Data.Foldable       as F
 import           Data.Matrix         hiding ((!))
 import qualified Data.Matrix         as M
 import           Data.Sequence       (Seq, (><), (|>))
@@ -9,9 +11,8 @@ import qualified Data.Sequence       as S
 import qualified Data.Vector         as V
 import           Data.Vector.Unboxed (Vector, (!))
 import qualified Data.Vector.Unboxed as UV
-import Tables
-import Utils
-import Data.Bits (shiftL)
+import           Tables
+import           Utils
 
 facesNo7 :: Vector Int -> Vector Int -> Vector Double -> Int -> Int -> [Int]
 facesNo7 faces p1 values l j = map fun [0 .. l-1]
@@ -122,3 +123,6 @@ getBasic2 a level cubeco = UV.fromList values
   f i j = getElem i j cubeco - 1
   values = [a A.! (f i 1, f i 2, f i 3) - level |
             i <- [1 .. nrows cubeco - 1]] ++ [0]
+
+getTcase :: Vector Int -> Vector Int
+getTcase types = UV.fromList [crf ! (types ! i) | i <- [0 .. UV.length types - 1]]
