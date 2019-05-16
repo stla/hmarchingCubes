@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 module Internals where
 import           Data.Array.Unboxed  hiding ((!))
+import qualified Data.Array.Unboxed  as A
 import           Data.Matrix         hiding ((!))
 import qualified Data.Matrix         as M
 import           Data.Sequence       (Seq, (><), (|>))
@@ -114,3 +115,10 @@ getBasic1 r vivjvk = elementwiseUnsafe (+) k1 k2
 --
 -- v :: Matrix Int
 -- v = fromLists [[2,1,1],[2,1,1],[1,2,1],[2,2,1]]
+
+getBasic2 :: Array (Int,Int,Int) Double -> Double -> Matrix Int -> Vector Double
+getBasic2 a level cubeco = UV.fromList values
+  where
+  f i j = getElem i j cubeco - 1
+  values = [a A.! (f i 1, f i 2, f i 3) - level |
+            i <- [1 .. nrows cubeco - 1]] ++ [0]
