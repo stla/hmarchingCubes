@@ -21,7 +21,7 @@ facesNo7 faces p1 values l j = map fun [0 .. l-1]
   fun i = if temp == 1 then shiftL 1 (j-1) else 0
     where
     f = abs (faces ! i) - 1
-    e = facePoints V.! (f-1)
+    e = facePoints V.! f
     e1 = e ! 1
     e2 = e ! 2
     e3 = e ! 3
@@ -31,7 +31,7 @@ facesNo7 faces p1 values l j = map fun [0 .. l-1]
     b = values ! (p+e2)
     c = values ! (p+e3)
     d = values ! (p+e4)
-    temp = (if f>0 then 1::Int else -1) * (if a*b-c*d > 0 then 1 else -1)
+    temp = (if faces ! i > 0 then 1::Int else -1) * (if a*b-c*d > 0 then 1 else -1)
 
 faces7 :: Vector Int -> Vector Int -> Vector Double -> Int -> Int -> [Int]
 faces7 faces p1 values l j = map fun [0 .. l-1]
@@ -95,7 +95,7 @@ levCells a level mx = out
     l = S.length goodcells
     cll = fmap (\(i,_) -> i + nx'*ny'*k + 1) goodcells
     tp = fmap snd goodcells
-  out = M.transpose (fromLists (concatMap f [0 .. nz'-1]))
+  out = M.transpose (fromLists (concatMap f [0 .. nz'- 1]))
   f k = map (g k) [0 .. S.index lengths k - 1]
   g k l = [  c `mod` nx' + 1
           , (c `div` nx') `mod` ny' + 1

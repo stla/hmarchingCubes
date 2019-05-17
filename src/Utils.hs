@@ -1,13 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 module Utils where
 import           Data.Array.Unboxed
-import Data.List (transpose)
-import           Data.Matrix         hiding ((!), transpose)
+import           Data.List           (transpose)
+import           Data.Matrix         hiding (transpose, (!))
 import qualified Data.Matrix         as M
 import           Data.Sequence       (Seq, (><), (|>))
 import qualified Data.Sequence       as S
 import qualified Data.Vector         as V
-import           Data.Vector.Unboxed (Unbox, Vector)
+import           Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as UV
 
 mymat :: Matrix Double
@@ -94,7 +94,7 @@ subMatrix mtrx rows cols =
          (\(i,j) -> getElem (rows !! (i-1) + 1) (cols UV.! (j-1) + 1) mtrx)
 
 matrix2listMinusFirstColumn :: Matrix a -> [a]
-matrix2listMinusFirstColumn mtrx = concat $ drop 1 (toLists $ M.transpose mtrx)
+matrix2listMinusFirstColumn mtrx = concat $ transpose $ tail (toLists $ M.transpose mtrx)
 
 jthColumn :: Vector Int -> Int -> Int -> Vector Int
 jthColumn vec ncol j = UV.map (\i -> vec UV.! (i*ncol+j)) (UV.enumFromN 0 nrow)
