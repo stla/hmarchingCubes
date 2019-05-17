@@ -13,12 +13,14 @@ import           Internals
 import           Tables
 import           Utils
 
-makeVoxel :: ((Double,Double,Double) -> Double)
-          -> ((Double,Double),(Double,Double),(Double,Double))
-          -> (Int, Int, Int)
-          -> Array (Int,Int,Int) Double
-makeVoxel fun ((xm,xM),(ym,yM),(zm,zM)) (nx, ny, nz) =
-  listArray ((0,0,0), (nx-1,ny-1,nz-1)) values
+type Bounds = ((Double,Double),(Double,Double),(Double,Double))
+type Dims = (Int, Int, Int)
+type Voxel = ((Array Dims Double, Double),(Bounds, Dims))
+type XYZ = (Double,Double,Double)
+
+makeVoxel :: (XYZ -> Double) -> Bounds -> Dims -> Voxel
+makeVoxel fun bds@((xm,xM),(ym,yM),(zm,zM)) dims@(nx,ny,nz) =
+  ((listArray ((0,0,0), (nx-1,ny-1,nz-1)) values, mxmm), (bds,dims))
   where
   x_ = [xm + (xM-xm) * fracx i | i <- [0..nx-1]]
   fracx p = realToFrac p / (realToFrac nx - 1)
@@ -27,11 +29,23 @@ makeVoxel fun ((xm,xM),(ym,yM),(zm,zM)) (nx, ny, nz) =
   z_ = [zm + (zM-zm) * fracz i | i <- [0..nz-1]]
   fracz p = realToFrac p / (realToFrac nz - 1)
   values = map fun [(x,y,z) | x <- x_, y <- y_, z <- z_]
+  mxmm = maximum (filter (not . isNaN) values)
 
-marchingCubes :: Array (Int,Int,Int) Double -> Double -> Double -> Matrix Double
-marchingCubes voxel mx level = fromJust triangles2 -- maybe triangles1 (triangles1 <->) triangles2
+rescale :: Floating a => (a,a) -> Int -> a -> a
+rescale (minmm,maxmm) n w = minmm + (maxmm-minmm) * w / fromIntegral (n+1)
+
+rescaleMatrix :: Matrix Double -> Bounds -> Dims -> Matrix Double
+rescaleMatrix mtrx (xbds,ybds,zbds) (nx,ny,nz) = mtrx'''
   where
-  (_, (nx',ny',nz')) = bounds voxel
+    mtrx' = mapCol (\_ w -> rescale xbds nx w) 1 mtrx
+    mtrx'' = mapCol (\_ w -> rescale ybds ny w) 2 mtrx'
+    mtrx''' = mapCol (\_ w -> rescale zbds nz w) 3 mtrx''
+
+marchingCubes :: Voxel -> Double -> Matrix Double
+marchingCubes ((voxel,mx), (bds,dims)) level =
+  rescaleMatrix (maybe triangles1 (triangles1 <->) triangles2) bds dims
+  where
+  -- (_, (nx',ny',nz')) = bounds voxel
   ijkt = levCells voxel level mx
   vt = getRow 4 ijkt
   tcase = getTcase vt
@@ -123,7 +137,7 @@ ftest (x,y,z) = x*x + y*y + z*z - 1
 
 voxel = makeVoxel ftest ((-1,1),(-1,1),(-1,1)) (5,5,5)
 
-mc = marchingCubes voxel 5 0
+mc = marchingCubes voxel 0
 
 fEgg :: (Double,Double,Double) -> Double
 fEgg (x,y,z) =
@@ -135,6 +149,6 @@ fEgg (x,y,z) =
 voxel' = makeVoxel fEgg ((-7.6,7.6),(-7.6,7.6),(-8,14))
                   (5, 5, 5)
 
-mc' = marchingCubes voxel' 50000000 0
+mc' = marchingCubes voxel' 0
 
--- TODO: maximum voxel
+-- TODO: maximum voxel, rescale
