@@ -108,7 +108,7 @@ getBasic1 :: Vector Int -> Matrix Int -> Matrix Int
 getBasic1 r vivjvk = elementwiseUnsafe (+) k1 k2
   where
   nR = UV.length r
-  cube1 = matrix nR 3 (\(i,j) -> getElem (r ! (i-1)) j vivjvk)
+  cube1 = matrix nR 3 (\(i,j) -> getElem (r ! (i-1) + 1) j vivjvk)
   k1 = kro1 indexArray nR
   k2 = kro2 cube1 8
 
@@ -126,7 +126,7 @@ getBasic2 a level cubeco = UV.fromList values
             i <- [1 .. nrows cubeco - 1]] ++ [0]
 
 getTcase :: V.Vector Int -> Vector Int
-getTcase types = UV.fromList [crf ! (types V.! i) |
+getTcase types = UV.fromList [crf ! (types V.! i) - 1 |
                               i <- [0 .. V.length types - 1]]
 
 getR :: Vector Int -> Vector Int
@@ -181,8 +181,8 @@ getPoints cubeco values p1 x1 x2 =
   w5 = map (\j -> fromIntegral $ getElem (j+1) 3 cubeco) p1
   v6 = map (\j -> fromIntegral $ getElem (j-1) 3 cubeco) p1x2
   w6 = map (\j -> fromIntegral $ getElem (j+5) 3 cubeco) p1
-  v7 = map (\j -> values ! j-2) p1x1
-  v8 = map (\j -> values ! j-2) p1x2
+  v7 = map (\j -> values ! (j-2)) p1x1
+  v8 = map (\j -> values ! (j-2)) p1x2
   out0 = average lambdamu v1 w1
   out1 = average lambdamu v2 w2
   out2 = average lambdamu v3 w3
