@@ -17,6 +17,7 @@ library
   exposed-modules:     Utils
                      , Tables
                      , Internals
+                     , MarchingCubes
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector

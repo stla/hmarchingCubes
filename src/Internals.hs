@@ -125,8 +125,9 @@ getBasic2 a level cubeco = UV.fromList values
   values = [a A.! (f i 1, f i 2, f i 3) - level |
             i <- [1 .. nrows cubeco - 1]] ++ [0]
 
-getTcase :: Vector Int -> Vector Int
-getTcase types = UV.fromList [crf ! (types ! i) | i <- [0 .. UV.length types - 1]]
+getTcase :: V.Vector Int -> Vector Int
+getTcase types = UV.fromList [crf ! (types V.! i) |
+                              i <- [0 .. V.length types - 1]]
 
 getR :: Vector Int -> Vector Int
 getR tcase = UV.fromList $ F.toList $ go 0 S.empty

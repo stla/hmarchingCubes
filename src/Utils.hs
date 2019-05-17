@@ -1,11 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 module Utils where
 import           Data.Array.Unboxed
-import qualified Data.Matrix as M
-import           Data.Matrix        hiding ((!))
-import           Data.Sequence      (Seq, (|>), (><))
-import qualified Data.Sequence      as S
-import qualified Data.Vector        as V
+import           Data.Matrix         hiding ((!))
+import qualified Data.Matrix         as M
+import           Data.Sequence       (Seq, (><), (|>))
+import qualified Data.Sequence       as S
+import qualified Data.Vector         as V
+import           Data.Vector.Unboxed (Unbox, Vector)
+import qualified Data.Vector.Unboxed as UV
 
 mymat :: Matrix Double
 mymat = fromLists [[1,2,3],[4,5,6],[7,8,9]]
@@ -67,6 +69,11 @@ replicateEach :: [a] -> [Int] -> Seq a
 replicateEach list counts = foldr (><) S.empty sequences
   where
   sequences = zipWith S.replicate counts list
+
+-- replicateEach :: Unbox a => Vector a -> Vector Int -> Seq a
+-- replicateEach list counts = UV.foldr (><) S.empty sequences
+--   where
+--   sequences = UV.zipWith S.replicate counts list
 
 replicateEach' :: [a] -> Int -> Seq a
 replicateEach' list n = foldr ((><) . S.replicate n) S.empty list
