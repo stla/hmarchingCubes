@@ -4,9 +4,10 @@ import           Data.Array.Unboxed  hiding ((!))
 import qualified Data.Array.Unboxed  as A
 import           Data.Bits           (shiftL)
 import qualified Data.Foldable       as F
+import           Data.List           (zipWith4)
 import           Data.Matrix         hiding ((!))
 import qualified Data.Matrix         as M
-import           Data.Sequence       (Seq, (><), (|>))
+import           Data.Sequence       (Seq, (|>))
 import qualified Data.Sequence       as S
 import qualified Data.Vector         as V
 import           Data.Vector.Unboxed (Vector, (!))
@@ -142,3 +143,66 @@ getR tcase = UV.fromList $ F.toList $ go 0 S.empty
           go (i+1) out
         where
         tc = tcase ! i
+
+lambdaMu :: [Double] -> ([Double], [Double])
+lambdaMu x1 = (lambda, mu)
+  where
+  lambda = map (\x -> fromIntegral $ floor (x/9)) x1
+  mu = map (\x -> 1 - x) lambda
+
+average :: ([Double], [Double]) -> [Double] -> [Double] -> [Double]
+average (lambda,mu) = zipWith4 (\a b c d -> b*c + a*d) lambda mu
+
+average7 :: ([Double], [Double]) -> [Double] -> [Double]
+average7 (lambda,mu) = zipWith3 (\a b c -> b*c + a) lambda mu
+
+average8 :: ([Double], [Double]) -> [Double] -> [Double]
+average8 (lambda,mu) = zipWith3 (\a b c -> b*c - a) lambda mu
+
+getPoints :: Matrix Int -> Vector Double -> [Int] -> [Int] -> [Int]
+          -> Matrix Double
+getPoints cubeco values p1 x1 x2 =
+  fromLists [out0, out1, out2, out3, out4, out5, out6, out7]
+  where
+  p1x1 = zipWith (+) p1 x1
+  p1x2 = zipWith (+) p1 x2
+  xx1 = map fromIntegral x1
+  lambdamu = lambdaMu xx1
+  v1 = map (\j -> fromIntegral $ getElem (j-1) 1 cubeco) p1x1
+  w1 = map (\j -> fromIntegral $ getElem j 1 cubeco) p1
+  v2 = map (\j -> fromIntegral $ getElem (j-1) 1 cubeco) p1x2
+  w2 = map (\j -> fromIntegral $ getElem (j+1) 1 cubeco) p1
+  v3 = map (\j -> fromIntegral $ getElem (j-1) 2 cubeco) p1x1
+  w3 = map (\j -> fromIntegral $ getElem (j+1) 2 cubeco) p1
+  v4 = map (\j -> fromIntegral $ getElem (j-1) 2 cubeco) p1x2
+  w4 = map (\j -> fromIntegral $ getElem (j+2) 2 cubeco) p1
+  v5 = map (\j -> fromIntegral $ getElem (j-1) 3 cubeco) p1x1
+  w5 = map (\j -> fromIntegral $ getElem (j+1) 3 cubeco) p1
+  v6 = map (\j -> fromIntegral $ getElem (j-1) 3 cubeco) p1x2
+  w6 = map (\j -> fromIntegral $ getElem (j+5) 3 cubeco) p1
+  v7 = map (\j -> values ! j-2) p1x1
+  v8 = map (\j -> values ! j-2) p1x2
+  out0 = average lambdamu v1 w1
+  out1 = average lambdamu v2 w2
+  out2 = average lambdamu v3 w3
+  out3 = average lambdamu v4 w4
+  out4 = average lambdamu v5 w5
+  out5 = average lambdamu v6 w6
+  out6 = average7 lambdamu v7
+  out7 = average8 lambdamu v8
+
+calPoints :: Matrix Double -> Matrix Double
+calPoints points = M.transpose $ fromLists [x,y,z]
+  where
+  x1 = getRow 1 points
+  x2 = getRow 2 points
+  y1 = getRow 3 points
+  y2 = getRow 4 points
+  z1 = getRow 5 points
+  z2 = getRow 6 points
+  v1 = getRow 7 points
+  v2 = getRow 8 points
+  s = V.zipWith (\a b -> a/(a-b)) v1 v2
+  x = V.toList $ V.zipWith3 (\a b c -> a + c*(b-a)) x1 x2 s
+  y = V.toList $ V.zipWith3 (\a b c -> a + c*(b-a)) y1 y2 s
+  z = V.toList $ V.zipWith3 (\a b c -> a + c*(b-a)) z1 z2 s
