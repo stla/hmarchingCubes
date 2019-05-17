@@ -20,7 +20,7 @@ facesNo7 faces p1 values l j = map fun [0 .. l-1]
   where
   fun i = if temp == 1 then shiftL 1 (j-1) else 0
     where
-    f = faces ! i
+    f = abs (faces ! i) - 1
     e = facePoints V.! (f-1)
     e1 = e ! 1
     e2 = e ! 2

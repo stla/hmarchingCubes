@@ -1,7 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 module Utils where
 import           Data.Array.Unboxed
-import           Data.Matrix         hiding ((!))
+import Data.List (transpose)
+import           Data.Matrix         hiding ((!), transpose)
 import qualified Data.Matrix         as M
 import           Data.Sequence       (Seq, (><), (|>))
 import qualified Data.Sequence       as S
@@ -90,7 +91,7 @@ cbind mtrx col1 col2 = mtrx <|> col1' <|> col2'
 subMatrix :: Matrix a -> [Int] -> Vector Int -> Matrix a
 subMatrix mtrx rows cols =
   matrix (length rows) (UV.length cols)
-         (\(i,j) -> getElem (rows !! i) (cols UV.! j) mtrx)
+         (\(i,j) -> getElem (rows !! (i-1) + 1) (cols UV.! (j-1) + 1) mtrx)
 
 matrix2listMinusFirstColumn :: Matrix a -> [a]
 matrix2listMinusFirstColumn mtrx = concat $ drop 1 (toLists $ M.transpose mtrx)

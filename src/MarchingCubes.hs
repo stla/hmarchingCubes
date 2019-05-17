@@ -58,6 +58,7 @@ marchingCubes voxel mx level = maybe triangles1 (triangles1 <->) triangles2
   x2 = map (! 2) epoints
   points = getPoints cubeco values p1rep x1 x2
   triangles1 = calPoints points
+  -- special cases
   r3s = filter (not . UV.null)
         (map (\x -> UV.findIndices (== x) tcase) specialName)
   setOfTriangles = map fromJust $ filter isJust (imap special r3s)
@@ -73,7 +74,7 @@ marchingCubes voxel mx level = maybe triangles1 (triangles1 <->) triangles2
 --    p13 = [8*i + 1 | i <- [0 .. UV.length r3 - 1]]
     p13 = UV.map (\i -> 8*i + 1) (UV.enumFromN 0 nR3)
 --    cases3 = UV.map (\j -> vt V.! j - 1) r3
-    cases3 = [vt V.! (r3 ! i) | i <- [0 .. UV.length r3 - 1]]
+    cases3 = [vt V.! (r3 ! i) - 1 | i <- [0 .. nR3 - 1]]
     nedge = specialNedge ! c
     faces3 = UV.concat $ map ((V.!) facesTable) cases3
     index3 = case c of
@@ -89,7 +90,7 @@ marchingCubes voxel mx level = maybe triangles1 (triangles1 <->) triangles2
         | otherwise =
           let facej = jthColumn faces3 nface j in
           let temp = facesNo7 facej p13 values3 nR3 (j+1) in
-          zipWith (+) idx temp
+          loop (j+1) (zipWith (+) idx temp)
     edges3' = UV.toList $ UV.concat $ map ((V.!) edgesTable2) cases3
     edges3 = vector2matrix edges3' nedge
     edgesp1index = cbind edges3 (UV.toList p13) index3
@@ -106,7 +107,7 @@ marchingCubes voxel mx level = maybe triangles1 (triangles1 <->) triangles2
           Just $ calPoints points3
         where
           -- ce serait mieux de faire -1 dans Tables.hs
-          wcols = UV.cons 0 (UV.map (subtract 1) (UV.init ((specialPos V.! c) V.! j)))
+          wcols = UV.cons nedge (UV.map (subtract 1) (UV.init ((specialPos V.! c) V.! j)))
           ed = subMatrix edgesp1index wrows wcols
           col0ed = V.toList $ getCol 1 ed
           col0edrep = F.toList $ replicateEach' col0ed (UV.length wcols -1)
@@ -154,3 +155,15 @@ ftest (x,y,z) = x*x + y*y + z*z - 1
 voxel = makeVoxel ftest ((-1,1),(-1,1),(-1,1)) (5,5,5)
 
 mc = marchingCubes voxel 5 0
+
+fEgg :: (Double,Double,Double) -> Double
+fEgg (x,y,z) =
+  - sq(cos x * sin y + cos y * sin z + cos z * sin x) +
+    0.05-exp(100.0*(x*x/64+y*y/64 + z*z/(1.6*64)*exp(-0.4*z/8) - 1))
+  where
+  sq a = a*a
+
+voxel' = makeVoxel fEgg ((-7.6,7.6),(-7.6,7.6),(-8,14))
+                  (5, 5, 5)
+
+mc' = marchingCubes voxel' 50000000 0
