@@ -94,3 +94,8 @@ subMatrix mtrx rows cols =
 
 matrix2listMinusFirstColumn :: Matrix a -> [a]
 matrix2listMinusFirstColumn mtrx = concat $ drop 1 (toLists $ M.transpose mtrx)
+
+jthColumn :: Vector Int -> Int -> Int -> Vector Int
+jthColumn vec ncol j = UV.map (\i -> vec UV.! (i*ncol+j)) (UV.enumFromN 0 nrow)
+  where
+  nrow = UV.length vec `div` ncol

@@ -1119,8 +1119,11 @@ edgesTable2 = V.fromList (map UV.fromList
     [0]
   ] )
 
-specialName, specialNface, specialNedge :: UV.Vector Int
-specialName = UV.fromList [3, 4, 6, 7, 10, 12, 13]
+specialName :: [Int]
+specialName = [3, 4, 6, 7, 10, 12, 13]
+
+specialNface, specialNedge :: UV.Vector Int
+-- specialName = UV.fromList [3, 4, 6, 7, 10, 12, 13]
 specialNface = UV.fromList [1, 1, 2, 4, 3, 3, 7]
 specialNedge = UV.fromList [18, 24, 48, 177, 96, 96, 816]
 
@@ -1135,6 +1138,9 @@ specialInd = V.fromList (map UV.fromList
     [0, 4, 2, 6, 1, 5, 3, 7],
     [0, 1, 2, 4, 8, 16, 32, 3, 9, 17, 33, 6, 18, 34, 12, 20, 36, 24, 40, 35, 25, 22, 44, 19, 41, 38, 28, 83, 105, 102, 92]
   ] )
+
+-- specialIndSizes :: V.Vector Int
+-- specialIndSizes = V.map UV.length specialInd
 
 specialPos :: V.Vector (V.Vector (UV.Vector Int))
 specialPos = V.fromList (map (V.fromList . map UV.fromList)
