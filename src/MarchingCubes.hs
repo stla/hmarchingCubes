@@ -4,7 +4,8 @@ import           Data.Array.Unboxed  hiding ((!))
 import qualified Data.Array.Unboxed  as A
 import           Data.Bits           (shiftL)
 import qualified Data.Foldable       as F
-import           Data.List           (zipWith4, findIndices)
+import           Data.List           (elemIndices, findIndices, zipWith4)
+import           Data.List.Index     (imap)
 import           Data.Matrix         hiding ((!))
 import qualified Data.Matrix         as M
 import           Data.Sequence       (Seq, (|>))
@@ -15,7 +16,6 @@ import qualified Data.Vector.Unboxed as UV
 import           Internals
 import           Tables
 import           Utils
-import Data.List.Index (imap)
 
 makeVoxel :: ((Double,Double,Double) -> Double)
           -> ((Double,Double),(Double,Double),(Double,Double))
@@ -91,29 +91,28 @@ marchingCubes voxel mx level = triangles1
     edgesp1index = cbind edges3 (UV.toList p13) index3
 --    ind3Size = specialIndSizes V.! c
     ind3 = specialInd V.! c
+    newtriangles = map f [0 .. UV.length ind3 - 1]
+    f j = triangles3
+      where
+      wrows = elemIndices (ind3 ! j) index3
+      triangles3 = if null wrows
+        then
+          matrix 1 3 (const 0)  
+        else
+          calPoints points3
+        where
+          -- ce serait mieux de faire -1 dans Tables.hs
+          wcols = UV.cons 0 (UV.map (subtract 1) (UV.init ((specialPos V.! c) V.! j)))
+          ed = subMatrix edgesp1index wrows wcols
+          col0ed = V.toList $ getCol 1 ed
+          col0edrep = F.toList $ replicateEach' col0ed (UV.length wcols -1)
+          edge1 = matrix2listMinusFirstColumn ed
+          epoints' = map (\j -> edgePoints V.! (j-1)) edge1
+          x1' = map (! 1) epoints'
+          x2' = map (! 2) epoints'
+          points3 = getPoints cubeco3 values3 col0edrep x1' x2'
 
-
--- unsigned ind3[ind3Size];
--- for(unsigned i=0; i<ind3Size; i++){
---   ind3[i] = (*special_ind[c])[i];
--- }
 -- for(unsigned j=0; j<ind3Size; j++){
---   unsigned lwrows;
---   unsigned* wrows = whichEqual(index3, ind3[j], nR3, &lwrows);
---   if(lwrows>0){
---     unsigned lwcols = *(*(special_posSize)[c])[j] + 1;
---     unsigned* wcols = malloc(lwcols * sizeof(unsigned));
---     wcols[0] = nedge;
---     for(unsigned k=1; k<lwcols; k++){
---       wcols[k] = (*(*special_pos[c])[j])[k-1] - 1;
---     }
---     unsigned** ed = subsetMatrix(edgesp1index, wrows, wcols, lwrows, lwcols);
---     size_t* col0ed = malloc(lwrows * sizeof(size_t));
---     for(unsigned i=0; i<lwrows; i++){
---       col0ed[i] = (size_t) ed[i][0];
---     }
---     size_t* col0edrep = repeach(col0ed, lwcols-1, lwrows);
---     free(col0ed);
 --     unsigned* edge1 = matrix2vectorMinusFirstColumn(ed, lwrows, lwcols);
 --     freeMatrix_u(ed, lwrows);
 --     unsigned totalLength3 = lwrows*(lwcols-1);

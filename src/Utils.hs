@@ -87,10 +87,10 @@ cbind mtrx col1 col2 = mtrx <|> col1' <|> col2'
   col1' = colVector (V.fromList col1)
   col2' = colVector (V.fromList col2)
 
-subMatrix :: Matrix a -> [Int] -> [Int] -> Matrix a
+subMatrix :: Matrix a -> [Int] -> Vector Int -> Matrix a
 subMatrix mtrx rows cols =
-  matrix (length rows) (length cols) (\(i,j) -> getElem (rows!!i) (cols!!j) mtrx)
-
+  matrix (length rows) (UV.length cols)
+         (\(i,j) -> getElem (rows !! i) (cols UV.! j) mtrx)
 
 matrix2listMinusFirstColumn :: Matrix a -> [a]
 matrix2listMinusFirstColumn mtrx = concat $ drop 1 (toLists $ M.transpose mtrx)
