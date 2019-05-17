@@ -8,6 +8,7 @@ import           Data.List           (elemIndices, findIndices, zipWith4)
 import           Data.List.Index     (imap)
 import           Data.Matrix         hiding ((!))
 import qualified Data.Matrix         as M
+import           Data.Maybe          (isJust, fromJust)
 import           Data.Sequence       (Seq, (|>))
 import qualified Data.Sequence       as S
 import qualified Data.Vector         as V
@@ -33,7 +34,7 @@ makeVoxel fun ((xm,xM),(ym,yM),(zm,zM)) (nx, ny, nz) =
   values = map fun [(x,y,z) | x <- x_, y <- y_, z <- z_]
 
 marchingCubes :: Array (Int,Int,Int) Double -> Double -> Double -> Matrix Double
-marchingCubes voxel mx level = triangles1
+marchingCubes voxel mx level = maybe triangles1 (triangles1 <->) triangles2
   where
   (_, (nx',ny',nz')) = bounds voxel
   ijkt = levCells voxel level mx
@@ -59,9 +60,12 @@ marchingCubes voxel mx level = triangles1
   triangles1 = calPoints points
   r3s = filter (not . UV.null)
         (map (\x -> UV.findIndices (== x) tcase) specialName)
---  unsigned* R3 = whichEqual(tcase, special_name[c], nrow, &nR3);
-  setOfTriangles = imap special r3s
-  special c r3 = nedge
+  setOfTriangles = map fromJust $ filter isJust (imap special r3s)
+  special c r3 = if null newtriangles
+    then
+      Nothing
+    else
+      Just $ foldr (<->) (head newtriangles) (tail newtriangles)
     where
     nR3 = UV.length r3
     cubeco3 = getBasic1 r3 vivjvk
@@ -91,15 +95,15 @@ marchingCubes voxel mx level = triangles1
     edgesp1index = cbind edges3 (UV.toList p13) index3
 --    ind3Size = specialIndSizes V.! c
     ind3 = specialInd V.! c
-    newtriangles = map f [0 .. UV.length ind3 - 1]
+    newtriangles = map fromJust (filter isJust (map f [0 .. UV.length ind3 - 1]))
     f j = triangles3
       where
       wrows = elemIndices (ind3 ! j) index3
       triangles3 = if null wrows
         then
-          matrix 1 3 (const 0)  
+          Nothing
         else
-          calPoints points3
+          Just $ calPoints points3
         where
           -- ce serait mieux de faire -1 dans Tables.hs
           wcols = UV.cons 0 (UV.map (subtract 1) (UV.init ((specialPos V.! c) V.! j)))
@@ -111,6 +115,11 @@ marchingCubes voxel mx level = triangles1
           x1' = map (! 1) epoints'
           x2' = map (! 2) epoints'
           points3 = getPoints cubeco3 values3 col0edrep x1' x2'
+  triangles2 = if null setOfTriangles
+    then
+      Nothing
+    else
+      Just $ foldr (<->) (head setOfTriangles) (tail setOfTriangles)
 
 -- for(unsigned j=0; j<ind3Size; j++){
 --     unsigned* edge1 = matrix2vectorMinusFirstColumn(ed, lwrows, lwcols);
