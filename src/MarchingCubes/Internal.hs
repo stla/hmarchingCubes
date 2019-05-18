@@ -15,7 +15,8 @@ import qualified Data.Vector.Unboxed as UV
 import           MarchingCubes.Tables
 import           MarchingCubes.Utils
 
-facesNo7 :: (Num a, Ord a, Unbox a) => Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
+facesNo7 :: (Num a, Ord a, Unbox a) =>
+            Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
 facesNo7 faces p1 values l j = map fun [0 .. l-1]
   where
   fun i = if temp == 1 then shiftL 1 (j-1) else 0
@@ -31,9 +32,11 @@ facesNo7 faces p1 values l j = map fun [0 .. l-1]
     b = values ! (p+e2)
     c = values ! (p+e3)
     d = values ! (p+e4)
-    temp = (if faces ! i > 0 then 1::Int else -1) * (if a*b-c*d > 0 then 1 else -1)
+    temp = (if faces ! i > 0 then 1::Int else -1) *
+             (if a*b-c*d > 0 then 1 else -1)
 
-faces7 :: (Fractional a, RealFloat a, Unbox a, Ord a) => Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
+faces7 :: (Fractional a, RealFloat a, Unbox a, Ord a) =>
+          Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
 faces7 faces p1 values l j = map fun [0 .. l-1]
   where
   fun i = if temp == 1 then shiftL 1 (j-1) else 0
@@ -118,7 +121,8 @@ getBasic1 r vivjvk = elementwiseUnsafe (+) k1 k2
 -- v :: Matrix Int
 -- v = fromLists [[2,1,1],[2,1,1],[1,2,1],[2,2,1]]
 
-getBasic2 :: (Num a, Unbox a) => Array (Int,Int,Int) a -> a -> Matrix Int -> Vector a
+getBasic2 :: (Num a, Unbox a) =>
+             Array (Int,Int,Int) a -> a -> Matrix Int -> Vector a
 getBasic2 a level cubeco = UV.fromList values
   where
   f i j = getElem i j cubeco - 1
@@ -160,8 +164,8 @@ average7 (lambda,mu) = zipWith3 (\a b c -> b*c + a) lambda mu
 average8 :: Num a => ([a], [a]) -> [a] -> [a]
 average8 (lambda,mu) = zipWith3 (\a b c -> b*c - a) lambda mu
 
-getPoints :: (Unbox a, RealFrac a) => Matrix Int -> Vector a -> [Int] -> [Int] -> [Int]
-          -> Matrix a
+getPoints :: (Unbox a, RealFrac a) =>
+             Matrix Int -> Vector a -> [Int] -> [Int] -> [Int] -> Matrix a
 getPoints cubeco values p1 x1 x2 =
   fromLists [out0, out1, out2, out3, out4, out5, out6, out7]
   where

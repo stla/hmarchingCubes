@@ -124,7 +124,6 @@ main = do
   clearColor $= white
   materialAmbient Front $= black
   lighting $= Enabled
---  lightModelTwoSide $= Enabled
   light (Light 0) $= Enabled
   position (Light 0) $= Vertex4 0 (-100) 0 1
   ambient (Light 0) $= black

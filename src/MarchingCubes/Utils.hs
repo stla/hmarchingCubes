@@ -10,18 +10,17 @@ import qualified Data.Vector         as V
 import           Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as UV
 
-mymat :: Matrix Double
-mymat = fromLists [[1,2,3],[4,5,6],[7,8,9]]
-
-mymat' :: Matrix Int
-mymat' = fromLists [[0,2,3],[4,5,6],[7,8,256]]
-
-myarr :: Array (Int,Int,Int) Double
-myarr = listArray ((0,0,0),(3-1,3-1,2-1)) (map fromIntegral [1 .. 18])
-
-myarr2 :: Array (Int,Int,Int) Double
-myarr2 = listArray ((0,0,0),(3-1,3-1,2-1)) [1,10,4,13,7,16,2,11,5,14,8,17,3,12,6,15,9,18]
-
+-- mymat :: Matrix Double
+-- mymat = fromLists [[1,2,3],[4,5,6],[7,8,9]]
+--
+-- mymat' :: Matrix Int
+-- mymat' = fromLists [[0,2,3],[4,5,6],[7,8,256]]
+--
+-- myarr :: Array (Int,Int,Int) Double
+-- myarr = listArray ((0,0,0),(3-1,3-1,2-1)) (map fromIntegral [1 .. 18])
+--
+-- myarr2 :: Array (Int,Int,Int) Double
+-- myarr2 = listArray ((0,0,0),(3-1,3-1,2-1)) [1,10,4,13,7,16,2,11,5,14,8,17,3,12,6,15,9,18]
 
 levelMatrix :: Real a => Matrix a -> a -> Bool -> Matrix Int
 levelMatrix mtrx level strict = mapPos (\_ x -> if lt x then 1 else 0) mtrx
@@ -94,7 +93,8 @@ subMatrix mtrx rows cols =
          (\(i,j) -> getElem (rows !! (i-1) + 1) (cols UV.! (j-1) + 1) mtrx)
 
 matrix2listMinusFirstColumn :: Matrix a -> [a]
-matrix2listMinusFirstColumn mtrx = concat $ transpose $ tail (toLists $ M.transpose mtrx)
+matrix2listMinusFirstColumn mtrx =
+  concat $ transpose $ tail (toLists $ M.transpose mtrx)
 
 jthColumn :: Vector Int -> Int -> Int -> Vector Int
 jthColumn vec ncol j = UV.map (\i -> vec UV.! (i*ncol+j)) (UV.enumFromN 0 nrow)

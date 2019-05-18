@@ -118,8 +118,7 @@ marchingCubes ((voxel,mx), (bds,dims)) level =
         else
           Just $ calPoints points3
         where
-          -- ce serait mieux de faire -1 dans Tables.hs
-          wcols = UV.cons nedge (UV.map (subtract 1) ((specialPos V.! c) V.! j))
+          wcols = UV.cons nedge ((specialPos V.! c) V.! j)
           ed = subMatrix edgesp1index wrows wcols
           col0ed = V.toList $ getCol 1 ed
           col0edrep = F.toList $ replicateEach' col0ed (UV.length wcols -1)
@@ -134,26 +133,24 @@ marchingCubes ((voxel,mx), (bds,dims)) level =
     else
       Just $ foldl1 (<->) setOfTriangles
 
-ftest :: (Double,Double,Double) -> Double
-ftest (x,y,z) = x*x + y*y + z*z - 1
-
-voxel :: Voxel Double
-voxel = makeVoxel ftest ((-1,1),(-1,1),(-1,1)) (5,5,5)
-
-mc :: Matrix Double
-mc = marchingCubes voxel 0
-
-fEgg :: (Double,Double,Double) -> Double
-fEgg (x,y,z) =
-  - sq(cos x * sin y + cos y * sin z + cos z * sin x) +
-    0.05-exp(100.0*(x*x/64+y*y/64 + z*z/(1.6*64)*exp(-0.4*z/8) - 1))
-  where
-  sq a = a*a
-
-voxel' :: Voxel Double
-voxel' = makeVoxel fEgg ((-7.6,7.6),(-7.6,7.6),(-8,14)) (5, 5, 5)
-
-mc' :: Matrix Double
-mc' = marchingCubes voxel' 0
-
--- TODO: undup mesh, normals
+-- ftest :: (Double,Double,Double) -> Double
+-- ftest (x,y,z) = x*x + y*y + z*z - 1
+--
+-- voxel :: Voxel Double
+-- voxel = makeVoxel ftest ((-1,1),(-1,1),(-1,1)) (5,5,5)
+--
+-- mc :: Matrix Double
+-- mc = marchingCubes voxel 0
+--
+-- fEgg :: (Double,Double,Double) -> Double
+-- fEgg (x,y,z) =
+--   - sq(cos x * sin y + cos y * sin z + cos z * sin x) +
+--     0.05-exp(100.0*(x*x/64+y*y/64 + z*z/(1.6*64)*exp(-0.4*z/8) - 1))
+--   where
+--   sq a = a*a
+--
+-- voxel' :: Voxel Double
+-- voxel' = makeVoxel fEgg ((-7.6,7.6),(-7.6,7.6),(-8,14)) (5, 5, 5)
+--
+-- mc' :: Matrix Double
+-- mc' = marchingCubes voxel' 0
