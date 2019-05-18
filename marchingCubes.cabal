@@ -19,6 +19,7 @@ library
                      , MarchingCubes.Mesh
                      , MarchingCubes
                      , OpenGL.SpiderCage
+                     , OpenGL.BarthSextic
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector
