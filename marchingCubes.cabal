@@ -25,6 +25,7 @@ library
                      , array
                      , extra
                      , split
+                     , linear
                      , containers
   default-language:    Haskell2010
   ghc-options:         -Wall
