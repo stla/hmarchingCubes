@@ -37,7 +37,7 @@ undupMesh (vertices, faces) = (vertices', faces')
   faces' = map (map (idx !)) faces
 
 normal :: Floating a => (a,a,a) -> (a,a,a) -> (a,a,a) -> V3 a
-normal v1 v2 v3 = signorm $ cross (v3' ^-^ v1') (v2' ^-^ v1')
+normal v1 v2 v3 = signorm $ cross (v3' ^-^ v1') (v2' ^-^ v1') -- (NaN,NaN,NaN) if degenerate face
   where
   toV3 (x,y,z) = V3 x y z
   v1' = toV3 v1
@@ -59,10 +59,19 @@ normals mesh = fromList $ map fromV3 (elems $ normalsV3 mesh)
   where
   fromV3 (V3 x y z) = (x, y, z)
 
+degenerateFace :: (Unbox a, Eq a) => Vector (a,a,a) -> [Int] -> Bool
+degenerateFace vertices face = v1 == v2 || v1 == v3 || v2 == v3
+  where
+    v1 = vertices ! (face !! 0)
+    v2 = vertices ! (face !! 1)
+    v3 = vertices ! (face !! 2)
+
 makeMesh :: (Unbox a, RealFloat a, Ord a) => Voxel a -> a -> Mesh a
 makeMesh voxel level = (mesh, normals mesh)
   where
   mtrx = marchingCubes voxel level
   vertices = matrix2listOfTriples mtrx
   faces = chunksOf 3 [0 .. nrows mtrx - 1]
-  mesh = undupMesh (vertices,faces)
+  (vertices', faces') = undupMesh (vertices,faces)
+  faces'' = filter (not . degenerateFace vertices') faces'
+  mesh = (vertices', faces'')
