@@ -1,4 +1,4 @@
-module Tables where
+module MarchingCubes.Tables where
 import           Data.Matrix
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as UV

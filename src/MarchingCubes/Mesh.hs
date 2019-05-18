@@ -1,4 +1,6 @@
-module Mesh where
+module MarchingCubes.Mesh
+  (makeMesh, Mesh)
+  where
 import           Data.Foldable       (foldl')
 import           Data.IntMap.Strict  (IntMap, elems, unionWith)
 import qualified Data.IntMap.Strict  as IM
@@ -9,7 +11,7 @@ import           Data.Matrix         (Matrix, nrows, toLists)
 import           Data.Tuple.Extra    (curry3, first, second, thd3, (***))
 import           Data.Vector.Unboxed (Unbox, Vector, fromList, (!))
 import           Linear              (V3 (..), cross, signorm, (^+^), (^-^))
-import           MarchingCubes
+import           MarchingCubes.MarchingCubes
 
 type Mesh a = ((Vector (a,a,a), [[Int]]), Vector (a,a,a))
 

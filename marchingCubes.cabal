@@ -1,12 +1,10 @@
 name:                marchingCubes
 version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/githubuser/marchingCubes#readme
+homepage:            https://github.com/stla/marchingCubes#readme
 license:             GPL-3
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2019 Author name here
+author:              Stéphane Laurent
+maintainer:          laurent_step@yahoo.fr
+copyright:           2019 Stéphane Laurent
 category:            Algorithm
 build-type:          Simple
 extra-source-files:  README.md
@@ -14,11 +12,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Utils
-                     , Tables
-                     , Internals
+  exposed-modules:     MarchingCubes.Utils
+                     , MarchingCubes.Tables
+                     , MarchingCubes.Internal
+                     , MarchingCubes.MarchingCubes
+                     , MarchingCubes.Mesh
                      , MarchingCubes
-                     , Mesh
+                     , OpenGL.SpiderCage
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector
@@ -27,9 +27,11 @@ library
                      , split
                      , linear
                      , containers
+                     , OpenGL
+                     , GLUT
   default-language:    Haskell2010
   ghc-options:         -Wall
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/marchingCubes
+  location: https://github.com/stla/marchingCubes

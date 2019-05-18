@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
-module Utils where
+module MarchingCubes.Utils where
 import           Data.Array.Unboxed
 import           Data.List           (transpose)
 import           Data.Matrix         hiding (transpose, (!))

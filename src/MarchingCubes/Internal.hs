@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
-module Internals where
+module MarchingCubes.Internal where
 import           Data.Array.Unboxed  hiding ((!))
 import qualified Data.Array.Unboxed  as A
 import           Data.Bits           (shiftL)
@@ -12,8 +12,8 @@ import qualified Data.Sequence       as S
 import qualified Data.Vector         as V
 import           Data.Vector.Unboxed (Vector, (!), Unbox)
 import qualified Data.Vector.Unboxed as UV
-import           Tables
-import           Utils
+import           MarchingCubes.Tables
+import           MarchingCubes.Utils
 
 facesNo7 :: (Num a, Ord a, Unbox a) => Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
 facesNo7 faces p1 values l j = map fun [0 .. l-1]
