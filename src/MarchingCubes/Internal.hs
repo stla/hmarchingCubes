@@ -1,17 +1,18 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns     #-}
+{-# LANGUAGE FlexibleContexts #-}
 module MarchingCubes.Internal where
-import           Data.Array.Unboxed  hiding ((!))
-import qualified Data.Array.Unboxed  as A
-import           Data.Bits           (shiftL)
-import qualified Data.Foldable       as F
-import           Data.List           (zipWith4)
-import           Data.Matrix         hiding ((!))
-import qualified Data.Matrix         as M
-import           Data.Sequence       (Seq, (|>))
-import qualified Data.Sequence       as S
-import qualified Data.Vector         as V
-import           Data.Vector.Unboxed (Vector, (!), Unbox)
-import qualified Data.Vector.Unboxed as UV
+import           Data.Array.Unboxed   hiding ((!))
+import qualified Data.Array.Unboxed   as A
+import           Data.Bits            (shiftL)
+import qualified Data.Foldable        as F
+import           Data.List            (zipWith4)
+import           Data.Matrix          hiding ((!))
+import qualified Data.Matrix          as M
+import           Data.Sequence        (Seq, (|>))
+import qualified Data.Sequence        as S
+import qualified Data.Vector          as V
+import           Data.Vector.Unboxed  (Unbox, Vector, (!))
+import qualified Data.Vector.Unboxed  as UV
 import           MarchingCubes.Tables
 import           MarchingCubes.Utils
 
@@ -76,7 +77,8 @@ faceType mtrx level mx = elementwiseUnsafe (+) sum1 sum2
   sum1 = elementwiseUnsafe (+) minorMat sminorMat2
   sum2 = elementwiseUnsafe (+) sminorMat4 sminorMat8
 
-levCells :: Real a => Array (Int,Int,Int) a -> a -> a -> Matrix Int
+levCells :: (Real a, IArray UArray a) =>
+            UArray (Int,Int,Int) a -> a -> a -> Matrix Int
 levCells a level mx = out
   where
   bottomTypes = faceType (arrayToMatrix a 0) level mx
@@ -121,8 +123,8 @@ getBasic1 r vivjvk = elementwiseUnsafe (+) k1 k2
 -- v :: Matrix Int
 -- v = fromLists [[2,1,1],[2,1,1],[1,2,1],[2,2,1]]
 
-getBasic2 :: (Num a, Unbox a) =>
-             Array (Int,Int,Int) a -> a -> Matrix Int -> Vector a
+getBasic2 :: (Num a, Unbox a, IArray UArray a) =>
+             UArray (Int,Int,Int) a -> a -> Matrix Int -> Vector a
 getBasic2 a level cubeco = UV.fromList values
   where
   f i j = getElem i j cubeco - 1

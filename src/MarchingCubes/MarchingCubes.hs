@@ -1,26 +1,28 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns     #-}
+{-# LANGUAGE FlexibleContexts #-}
 module MarchingCubes.MarchingCubes
   (Voxel, XYZ, marchingCubes, makeVoxel)
   where
-import           Data.Array.Unboxed  hiding ((!))
-import qualified Data.Foldable       as F
-import           Data.List           (elemIndices, findIndices)
-import           Data.Matrix         hiding ((!))
-import qualified Data.Matrix         as M
-import           Data.Maybe          (fromJust, isJust)
-import qualified Data.Vector         as V
-import           Data.Vector.Unboxed (Unbox, (!))
-import qualified Data.Vector.Unboxed as UV
+import           Data.Array.Unboxed     hiding ((!))
+import qualified Data.Foldable          as F
+import           Data.List              (elemIndices, findIndices)
+import           Data.Matrix            hiding ((!))
+import qualified Data.Matrix            as M
+import           Data.Maybe             (fromJust, isJust)
+import qualified Data.Vector            as V
+import           Data.Vector.Unboxed    (Unbox, (!))
+import qualified Data.Vector.Unboxed    as UV
 import           MarchingCubes.Internal
 import           MarchingCubes.Tables
 import           MarchingCubes.Utils
 
 type Bounds a = ((a,a),(a,a),(a,a))
 type Dims = (Int, Int, Int)
-type Voxel a = ((Array Dims a, a),(Bounds a, Dims))
+type Voxel a = ((UArray Dims a, a),(Bounds a, Dims))
 type XYZ a = (a,a,a)
 
-makeVoxel :: RealFloat a => (XYZ a -> a) -> Bounds a -> Dims -> Voxel a
+makeVoxel :: (RealFloat a, IArray UArray a) =>
+             (XYZ a -> a) -> Bounds a -> Dims -> Voxel a
 makeVoxel fun bds@((xm,xM),(ym,yM),(zm,zM)) dims@(nx,ny,nz) =
   ((listArray ((0,0,0), (nx-1,ny-1,nz-1)) values, mxmm), (bds,dims))
   where
@@ -43,7 +45,8 @@ rescaleMatrix mtrx (xbds,ybds,zbds) (nx,ny,nz) = mtrx'''
     mtrx'' = mapCol (\_ w -> rescale ybds ny w) 2 mtrx'
     mtrx''' = mapCol (\_ w -> rescale zbds nz w) 3 mtrx''
 
-marchingCubes :: (RealFloat a, Unbox a) => Voxel a -> a -> Matrix a
+marchingCubes :: (RealFloat a, Unbox a, IArray UArray a) =>
+                 Voxel a -> a -> Matrix a
 marchingCubes ((voxel,mx), (bds,dims)) level =
   rescaleMatrix (maybe triangles1 (triangles1 <->) triangles2) bds dims
   where

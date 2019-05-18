@@ -1,6 +1,8 @@
+{-# LANGUAGE FlexibleContexts #-}
 module MarchingCubes.Mesh
   (makeMesh, Mesh)
   where
+import           Data.Array.Unboxed  (IArray, UArray)
 import           Data.Foldable       (foldl')
 import           Data.IntMap.Strict  (IntMap, elems, unionWith)
 import qualified Data.IntMap.Strict  as IM
@@ -68,7 +70,8 @@ degenerateFace vertices face = v1 == v2 || v1 == v3 || v2 == v3
     v2 = vertices ! (face !! 1)
     v3 = vertices ! (face !! 2)
 
-makeMesh :: (Unbox a, RealFloat a, Ord a) => Voxel a -> a -> Mesh a
+makeMesh :: (Unbox a, RealFloat a, Ord a, IArray UArray a) =>
+            Voxel a -> a -> Mesh a
 makeMesh voxel level = (mesh, normals mesh)
   where
   mtrx = marchingCubes voxel level
