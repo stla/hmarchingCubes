@@ -7,18 +7,18 @@ import           Data.Matrix         hiding ((!))
 import qualified Data.Matrix         as M
 import           Data.Maybe          (isJust, fromJust)
 import qualified Data.Vector         as V
-import           Data.Vector.Unboxed ((!))
+import           Data.Vector.Unboxed ((!), Unbox)
 import qualified Data.Vector.Unboxed as UV
 import           Internals
 import           Tables
 import           Utils
 
-type Bounds = ((Double,Double),(Double,Double),(Double,Double))
+type Bounds a = ((a,a),(a,a),(a,a))
 type Dims = (Int, Int, Int)
-type Voxel = ((Array Dims Double, Double),(Bounds, Dims))
-type XYZ = (Double,Double,Double)
+type Voxel a = ((Array Dims a, a),(Bounds a, Dims))
+type XYZ a = (a,a,a)
 
-makeVoxel :: (XYZ -> Double) -> Bounds -> Dims -> Voxel
+makeVoxel :: RealFloat a => (XYZ a -> a) -> Bounds a -> Dims -> Voxel a
 makeVoxel fun bds@((xm,xM),(ym,yM),(zm,zM)) dims@(nx,ny,nz) =
   ((listArray ((0,0,0), (nx-1,ny-1,nz-1)) values, mxmm), (bds,dims))
   where
@@ -31,17 +31,17 @@ makeVoxel fun bds@((xm,xM),(ym,yM),(zm,zM)) dims@(nx,ny,nz) =
   values = map fun [(x,y,z) | x <- x_, y <- y_, z <- z_]
   mxmm = maximum (filter (not . isNaN) values)
 
-rescale :: Floating a => (a,a) -> Int -> a -> a
+rescale :: Fractional a => (a,a) -> Int -> a -> a
 rescale (minmm,maxmm) n w = minmm + (maxmm-minmm) * w / fromIntegral (n+1)
 
-rescaleMatrix :: Matrix Double -> Bounds -> Dims -> Matrix Double
+rescaleMatrix :: Fractional a => Matrix a -> Bounds a -> Dims -> Matrix a
 rescaleMatrix mtrx (xbds,ybds,zbds) (nx,ny,nz) = mtrx'''
   where
     mtrx' = mapCol (\_ w -> rescale xbds nx w) 1 mtrx
     mtrx'' = mapCol (\_ w -> rescale ybds ny w) 2 mtrx'
     mtrx''' = mapCol (\_ w -> rescale zbds nz w) 3 mtrx''
 
-marchingCubes :: Voxel -> Double -> Matrix Double
+marchingCubes :: (RealFloat a, Unbox a) => Voxel a -> a -> Matrix a
 marchingCubes ((voxel,mx), (bds,dims)) level =
   rescaleMatrix (maybe triangles1 (triangles1 <->) triangles2) bds dims
   where
@@ -135,8 +135,10 @@ marchingCubes ((voxel,mx), (bds,dims)) level =
 ftest :: (Double,Double,Double) -> Double
 ftest (x,y,z) = x*x + y*y + z*z - 1
 
+voxel :: Voxel Double
 voxel = makeVoxel ftest ((-1,1),(-1,1),(-1,1)) (5,5,5)
 
+mc :: Matrix Double
 mc = marchingCubes voxel 0
 
 fEgg :: (Double,Double,Double) -> Double
@@ -146,9 +148,10 @@ fEgg (x,y,z) =
   where
   sq a = a*a
 
-voxel' = makeVoxel fEgg ((-7.6,7.6),(-7.6,7.6),(-8,14))
-                  (5, 5, 5)
+voxel' :: Voxel Double
+voxel' = makeVoxel fEgg ((-7.6,7.6),(-7.6,7.6),(-8,14)) (5, 5, 5)
 
+mc' :: Matrix Double
 mc' = marchingCubes voxel' 0
 
--- TODO: maximum voxel, rescale
+-- TODO: undup mesh, normals

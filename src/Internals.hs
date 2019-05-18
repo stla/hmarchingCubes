@@ -10,12 +10,12 @@ import qualified Data.Matrix         as M
 import           Data.Sequence       (Seq, (|>))
 import qualified Data.Sequence       as S
 import qualified Data.Vector         as V
-import           Data.Vector.Unboxed (Vector, (!))
+import           Data.Vector.Unboxed (Vector, (!), Unbox)
 import qualified Data.Vector.Unboxed as UV
 import           Tables
 import           Utils
 
-facesNo7 :: Vector Int -> Vector Int -> Vector Double -> Int -> Int -> [Int]
+facesNo7 :: (Num a, Ord a, Unbox a) => Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
 facesNo7 faces p1 values l j = map fun [0 .. l-1]
   where
   fun i = if temp == 1 then shiftL 1 (j-1) else 0
@@ -33,7 +33,7 @@ facesNo7 faces p1 values l j = map fun [0 .. l-1]
     d = values ! (p+e4)
     temp = (if faces ! i > 0 then 1::Int else -1) * (if a*b-c*d > 0 then 1 else -1)
 
-faces7 :: Vector Int -> Vector Int -> Vector Double -> Int -> Int -> [Int]
+faces7 :: (Fractional a, RealFloat a, Unbox a, Ord a) => Vector Int -> Vector Int -> Vector a -> Int -> Int -> [Int]
 faces7 faces p1 values l j = map fun [0 .. l-1]
   where
   fun i = if temp == 1 then shiftL 1 (j-1) else 0
@@ -60,7 +60,7 @@ faces7 faces p1 values l j = map fun [0 .. l-1]
     totalcond = cond1 && cond2 && cond3 && cond4
     temp = (if faces!i > 0 then 1::Int else -1) * (if totalcond then 1 else -1)
 
-faceType :: Matrix Double -> Double -> Double -> Matrix Int
+faceType :: Real a => Matrix a -> a -> a -> Matrix Int
 faceType mtrx level mx = elementwiseUnsafe (+) sum1 sum2
   where
   lm = levelMatrix mtrx level (level < mx)
@@ -73,7 +73,7 @@ faceType mtrx level mx = elementwiseUnsafe (+) sum1 sum2
   sum1 = elementwiseUnsafe (+) minorMat sminorMat2
   sum2 = elementwiseUnsafe (+) sminorMat4 sminorMat8
 
-levCells :: Array (Int,Int,Int) Double -> Double -> Double -> Matrix Int
+levCells :: Real a => Array (Int,Int,Int) a -> a -> a -> Matrix Int
 levCells a level mx = out
   where
   bottomTypes = faceType (arrayToMatrix a 0) level mx
@@ -118,7 +118,7 @@ getBasic1 r vivjvk = elementwiseUnsafe (+) k1 k2
 -- v :: Matrix Int
 -- v = fromLists [[2,1,1],[2,1,1],[1,2,1],[2,2,1]]
 
-getBasic2 :: Array (Int,Int,Int) Double -> Double -> Matrix Int -> Vector Double
+getBasic2 :: (Num a, Unbox a) => Array (Int,Int,Int) a -> a -> Matrix Int -> Vector a
 getBasic2 a level cubeco = UV.fromList values
   where
   f i j = getElem i j cubeco - 1
@@ -145,23 +145,23 @@ getR tcase = UV.fromList $ F.toList $ go 0 S.empty
         where
         tc = tcase ! i
 
-lambdaMu :: [Double] -> ([Double], [Double])
+lambdaMu :: RealFrac a => [a] -> ([a], [a])
 lambdaMu x1 = (lambda, mu)
   where
   lambda = map (\x -> fromIntegral $ floor (x/9)) x1
   mu = map (\x -> 1 - x) lambda
 
-average :: ([Double], [Double]) -> [Double] -> [Double] -> [Double]
+average :: Num a => ([a], [a]) -> [a] -> [a] -> [a]
 average (lambda,mu) = zipWith4 (\a b c d -> b*c + a*d) lambda mu
 
-average7 :: ([Double], [Double]) -> [Double] -> [Double]
+average7 :: Num a => ([a], [a]) -> [a] -> [a]
 average7 (lambda,mu) = zipWith3 (\a b c -> b*c + a) lambda mu
 
-average8 :: ([Double], [Double]) -> [Double] -> [Double]
+average8 :: Num a => ([a], [a]) -> [a] -> [a]
 average8 (lambda,mu) = zipWith3 (\a b c -> b*c - a) lambda mu
 
-getPoints :: Matrix Int -> Vector Double -> [Int] -> [Int] -> [Int]
-          -> Matrix Double
+getPoints :: (Unbox a, RealFrac a) => Matrix Int -> Vector a -> [Int] -> [Int] -> [Int]
+          -> Matrix a
 getPoints cubeco values p1 x1 x2 =
   fromLists [out0, out1, out2, out3, out4, out5, out6, out7]
   where
@@ -192,7 +192,7 @@ getPoints cubeco values p1 x1 x2 =
   out6 = average7 lambdamu v7
   out7 = average8 lambdamu v8
 
-calPoints :: Matrix Double -> Matrix Double
+calPoints :: Fractional a => Matrix a -> Matrix a
 calPoints points = M.transpose $ fromLists [x,y,z]
   where
   x1 = getRow 1 points

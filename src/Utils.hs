@@ -28,7 +28,7 @@ levelMatrix mtrx level strict = mapPos (\_ x -> if lt x then 1 else 0) mtrx
   where
   lt = if strict then (<) level else (<=) level
 
-arrayToMatrix :: Real a => Array (Int,Int,Int) a -> Int -> Matrix a
+arrayToMatrix :: Array (Int,Int,Int) a -> Int -> Matrix a
 arrayToMatrix arr k = matrix (nx+1) (ny+1) (\(i,j) -> arr ! (i-1,j-1,k))
   where
   (_, (nx,ny,_)) = bounds arr
