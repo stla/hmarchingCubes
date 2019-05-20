@@ -22,6 +22,7 @@ library
                      , OpenGL.BarthSextic
                      , Colors.Palettes
                      , Colors.ColorRamp
+                     , OpenGL.SpiderCageColored
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector
@@ -33,6 +34,7 @@ library
                      , OpenGL
                      , GLUT
                      , numeric-tools
+                     , vector-th-unbox
   default-language:    Haskell2010
   ghc-options:         -Wall
 

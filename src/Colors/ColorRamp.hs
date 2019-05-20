@@ -1,12 +1,22 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 module Colors.ColorRamp
   (colorRamp)
   where
 import           Colors.Palettes
 import           Data.Map.Strict              ((!))
-import           Data.Vector.Unboxed          (fromList)
+import           Data.Vector.Unboxed          (fromList, Unbox)
+import           Data.Vector.Unboxed.Deriving
 import           Graphics.Rendering.OpenGL.GL (Color4 (..), GLfloat)
 import           Numeric.Tools.Interpolation  (at, cubicSpline, tabulate)
 import           Numeric.Tools.Mesh           (uniformMesh)
+
+derivingUnbox "Color4"
+    [t| forall a . (Unbox a) => Color4 a -> (a, a, a, a) |]
+    [| \(Color4 r g b alpha) -> (r, g, b, alpha) |]
+    [| \(r, g, b, alpha) -> Color4 r g b alpha |]
 
 colorRamp' :: String -> Int -> Palette
 colorRamp' paletteName n =
