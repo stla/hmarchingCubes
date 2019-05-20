@@ -34,7 +34,7 @@ fun (x,y,z) =
     y2 = sq y
 
 voxel :: Voxel F
-voxel = makeVoxel fun ((-4.7,4.7),(-4.7,4.7),(-2.8,2.8)) (100, 100, 100)
+voxel = makeVoxel fun ((-4.7,4.7),(-4.7,4.7),(-2.8,2.8)) (150, 150, 150)
 
 spiderCage :: Mesh F
 spiderCage = makeMesh voxel 0.5

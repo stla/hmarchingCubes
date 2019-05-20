@@ -1,3 +1,3 @@
 # marchingCubes
 
-![Imgur](https://i.imgur.com/6GUtUZV.png)
+![Imgur](https://i.imgur.com/ZbtjCXs.png)
