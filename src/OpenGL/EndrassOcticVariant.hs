@@ -1,4 +1,4 @@
-module OpenGL.SpiderCageColored
+module OpenGL.EndrassOcticVariant
   (main)
   where
 import           Colors.ColorRamp
@@ -26,27 +26,29 @@ type Color = Color4 GLfloat
 
 fun :: XYZ F -> F
 fun (x,y,z) =
-    sq(sqrt(sq(x2 - y2) / (x2 + y2) + 3 * sq(z * sin 0.9)) - 3) +
-      6 * sq(sqrt(sq(x*y)/(x2 + y2) + sq(z * cos 0.9)) - 1.5)
+    64*(x2-1)*(y2-1)*(sq(x+y)-2)*(sq(x-y)-2) -
+      sq(4*(1-sqrt 2)*sq(x2+y2) + (8*(2-sqrt 2)*z2 + 2*(2-7*sqrt 2)) * (x2+y2) -
+         16*z2*z2+8*(1+2*sqrt 2)*z2-(1-12*sqrt 2))
   where
     sq a = a*a
     x2 = sq x
     y2 = sq y
+    z2 = sq z
 
 voxel :: Voxel F
-voxel = makeVoxel fun ((-4.7,4.7),(-4.7,4.7),(-2.8,2.8)) (150, 150, 150)
+voxel = makeVoxel fun ((-1.7,1.7),(-1.7,1.7),(-1.7,1.7)) (150, 150, 150)
 
-spiderCage :: Mesh F
-spiderCage = makeMesh voxel 0.5
+octic :: Mesh F
+octic = makeMesh voxel 0
 
 vertices :: Vector (XYZ F)
-vertices = fst $ fst spiderCage
+vertices = fst $ fst octic
 
 faces :: [[Int]]
-faces = snd $ fst spiderCage
+faces = snd $ fst octic
 
 normals :: Vector (XYZ F)
-normals = snd spiderCage
+normals = snd octic
 
 funColor :: F -> F -> F -> Color
 funColor dmin dmax d = clrs !! j
@@ -111,7 +113,7 @@ resize zoom s@(Size w h) = do
   matrixMode $= Projection
   loadIdentity
   perspective 45.0 (realToFrac w / realToFrac h) 1.0 100.0
-  lookAt (Vertex3 0 (-13+zoom) 0) (Vertex3 0 0 0) (Vector3 0 0 1)
+  lookAt (Vertex3 0 (-6+zoom) 0) (Vertex3 0 0 0) (Vector3 0 0 1)
   matrixMode $= Modelview 0
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
@@ -134,7 +136,7 @@ keyboard rot1 rot2 rot3 zoom c _ = do
 main :: IO ()
 main = do
   _ <- getArgsAndInitialize
-  _ <- createWindow "Spider cage"
+  _ <- createWindow "Variant of Endrass octic"
   windowSize $= Size 500 500
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
   clearColor $= white
@@ -159,7 +161,7 @@ main = do
   reshapeCallback $= Just (resize 0)
   keyboardCallback $= Just (keyboard rot1 rot2 rot3 zoom)
   idleCallback $= Nothing
-  putStrLn "*** Spider cage ***\n\
+  putStrLn "*** Variant of Endrass octic ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\

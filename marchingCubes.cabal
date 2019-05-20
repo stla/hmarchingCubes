@@ -23,6 +23,7 @@ library
                      , Colors.Palettes
                      , Colors.ColorRamp
                      , OpenGL.SpiderCageColored
+                     , OpenGL.EndrassOcticVariant
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector
