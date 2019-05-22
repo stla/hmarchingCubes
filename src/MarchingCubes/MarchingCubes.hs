@@ -36,14 +36,14 @@ makeVoxel fun bds@((xm,xM),(ym,yM),(zm,zM)) dims@(nx,ny,nz) =
   mxmm = maximum (filter (not . isNaN) values)
 
 rescale :: Fractional a => (a,a) -> Int -> a -> a
-rescale (minmm,maxmm) n w = minmm + (maxmm-minmm) * w / fromIntegral (n+1)
+rescale (minmm,maxmm) n w = minmm + (maxmm-minmm) * w / fromIntegral (n-1)
 
 rescaleMatrix :: Fractional a => Matrix a -> Bounds a -> Dims -> Matrix a
 rescaleMatrix mtrx (xbds,ybds,zbds) (nx,ny,nz) = mtrx'''
   where
-    mtrx' = mapCol (\_ w -> rescale xbds nx w) 1 mtrx
-    mtrx'' = mapCol (\_ w -> rescale ybds ny w) 2 mtrx'
-    mtrx''' = mapCol (\_ w -> rescale zbds nz w) 3 mtrx''
+    mtrx' = mapCol (\_ w -> rescale xbds nx (w-1)) 1 mtrx
+    mtrx'' = mapCol (\_ w -> rescale ybds ny (w-1)) 2 mtrx'
+    mtrx''' = mapCol (\_ w -> rescale zbds nz (w-1)) 3 mtrx''
 
 marchingCubes :: (RealFloat a, Unbox a, IArray UArray a) =>
                  Voxel a -> a -> Matrix a
