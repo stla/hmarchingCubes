@@ -34,12 +34,12 @@ fun (ρ, θ, ϕ) = x*x*(x+3)- 3*(x-1)*y*y - 4 + z*z*(z+3)
     z = ρ * cos ϕ
 
 gradient :: XYZ F -> XYZ F
-gradient (x,y,z) =
-  (
-    -(3*x*x + 6*x - 3*y*y)
-  , -(-6*x*y + 6*y)
-  , -(3*z*z + 6*z)
-  )
+gradient (x,y,z) = (a/l, b/l, c/l)
+  where
+    a = -(3*x*x + 6*x - 3*y*y)
+    b = -(-6*x*y + 6*y)
+    c = -(3*z*z + 6*z)
+    l = sqrt(a*a + b*b + c*c)
 
 voxel :: Voxel F
 voxel = makeVoxel fun ((0,6),(0,2*pi),(0,pi)) (100, 100, 100)
