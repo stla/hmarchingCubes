@@ -37,6 +37,9 @@ library
                      , GLUT
                      , numeric-tools
                      , vector-th-unbox
+                     , gl-capture
+                     , directory
+                     , bytestring
   default-language:    Haskell2010
   ghc-options:         -Wall
 

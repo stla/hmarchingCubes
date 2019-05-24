@@ -1,12 +1,19 @@
 module OpenGL.LabsCubic
   (main)
   where
+import           Control.Concurrent                (threadDelay)
+import           Control.Monad                     (when)
+import qualified Data.ByteString                   as B
 import           Data.IORef
-import           Data.Vector.Unboxed          (Vector, (!))
-import qualified Data.Vector.Unboxed          as V
+import           Data.Vector.Unboxed               (Vector, (!))
+import qualified Data.Vector.Unboxed               as V
+import           Graphics.Rendering.OpenGL.Capture (capturePPM)
 import           Graphics.Rendering.OpenGL.GL
 import           Graphics.UI.GLUT
 import           MarchingCubes
+import           System.Directory                  (doesDirectoryExist)
+import           System.IO.Unsafe
+import           Text.Printf
 
 white,black,navy,forestgreen,cyan,yellow :: Color4 GLfloat
 white = Color4 1 1 1 1
@@ -18,10 +25,10 @@ yellow = Color4 1 1 0 1
 
 data Context = Context
     {
-      contextRot1      :: IORef GLfloat
-    , contextRot2      :: IORef GLfloat
-    , contextRot3      :: IORef GLfloat
-    , contextZoom      :: IORef Double
+      contextRot1 :: IORef GLfloat
+    , contextRot2 :: IORef GLfloat
+    , contextRot3 :: IORef GLfloat
+    , contextZoom :: IORef Double
     }
 
 type F = Double
@@ -109,13 +116,16 @@ resize zoom s@(Size w h) = do
   matrixMode $= Projection
   loadIdentity
   perspective 45.0 (realToFrac w / realToFrac h) 1.0 100.0
-  lookAt (Vertex3 0 (-13+zoom) 0) (Vertex3 0 0 0) (Vector3 0 0 1)
+  lookAt (Vertex3 0 (-17+zoom) 0) (Vertex3 0 0 0) (Vector3 0 0 1)
   matrixMode $= Modelview 0
 
 keyboard :: IORef GLfloat -> IORef GLfloat -> IORef GLfloat -- rotations
          -> IORef Double -- zoom
+         -> IORef Bool -- animation
+         -> IORef Int -- animation delay
+         -> IORef Bool -- save animation
          -> KeyboardCallback
-keyboard rot1 rot2 rot3 zoom c _ = do
+keyboard rot1 rot2 rot3 zoom anim delay save c _ = do
   case c of
     'e' -> rot1 $~! subtract 2
     'r' -> rot1 $~! (+ 2)
@@ -125,9 +135,35 @@ keyboard rot1 rot2 rot3 zoom c _ = do
     'i' -> rot3 $~! (+ 2)
     'm' -> zoom $~! (+ 1)
     'l' -> zoom $~! subtract 1
+    'a' -> anim $~! not
+    'o' -> delay $~! (+10000)
+    'p' -> delay $~! (\d -> if d==0 then 0 else d-10000)
+    's' -> save $~! not
     'q' -> leaveMainLoop
     _   -> return ()
   postRedisplay Nothing
+
+ppmExists :: Bool
+{-# NOINLINE ppmExists #-}
+ppmExists = unsafePerformIO $ doesDirectoryExist "./ppm"
+
+idle :: IORef Bool -> IORef Int -> IORef Bool -> IORef Int -> IORef GLfloat
+     -> IdleCallback
+idle anim delay save snapshots rot3 = do
+    a <- get anim
+    snapshot <- get snapshots
+    s <- get save
+    when a $ do
+      d <- get delay
+      when (s && ppmExists && snapshot < 360) $ do
+        let ppm = printf "ppm/pic%04d.ppm" snapshot
+        (>>=) capturePPM (B.writeFile ppm)
+        print snapshot
+        snapshots $~! (+1)
+      rot3 $~! (+1)
+      _ <- threadDelay d
+      postRedisplay Nothing
+    return ()
 
 main :: IO ()
 main = do
@@ -158,12 +194,19 @@ main = do
                                       contextRot3 = rot3,
                                       contextZoom = zoom}
   reshapeCallback $= Just (resize 0)
-  keyboardCallback $= Just (keyboard rot1 rot2 rot3 zoom)
-  idleCallback $= Nothing
+  anim <- newIORef False
+  delay <- newIORef 0
+  save <- newIORef False
+  snapshots <- newIORef 0
+  keyboardCallback $= Just (keyboard rot1 rot2 rot3 zoom anim delay save)
+  idleCallback $= Just (idle anim delay save snapshots rot3)
   putStrLn "*** Labs cubic ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\
         \    Zoom: l, m\n\
+        \    Animation: a\n\
+        \    Animation speed: o, p\n\
+        \    Save animation: s\n\
         \"
   mainLoop
