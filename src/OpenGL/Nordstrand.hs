@@ -32,7 +32,7 @@ data Context = Context
     , contextZoom :: IORef Double
     }
 
-type F = Double
+type F = Float
 
 fun :: XYZ F -> F
 fun (ρ, θ, ϕ) =
@@ -49,7 +49,7 @@ fun (ρ, θ, ϕ) =
     y3 = y*y2
     z3 = z*z2
 
-pol :: Polynomial
+pol :: Polynomial F
 pol = (M (Monomial 25 (0,0,0)) :*:
   fromListOfMonomials [ Monomial 1 (3,1,0)
                       , Monomial 1 (3,0,1)
@@ -71,13 +71,13 @@ pol = (M (Monomial 25 (0,0,0)) :*:
                       , Monomial 1 (1,0,1)
                       , Monomial 1 (0,1,1)])
 
-fundx :: (Double, Double, Double) -> Double
+fundx :: XYZ F -> F
 fundx = evalPoly $ derivPoly pol 'x'
 
-fundy :: (Double, Double, Double) -> Double
+fundy :: XYZ F -> F
 fundy = evalPoly $ derivPoly pol 'y'
 
-fundz :: (Double, Double, Double) -> Double
+fundz :: XYZ F -> F
 fundz = evalPoly $ derivPoly pol 'z'
 
 gradient :: XYZ F -> XYZ F
@@ -89,7 +89,7 @@ gradient xyz = (-x/l, -y/l, -z/l)
     l = sqrt(x*x + y*y + z*z)
 
 voxel :: Voxel F
-voxel = makeVoxel fun ((0,1),(0,2*pi),(0,pi)) (200, 200, 200)
+voxel = makeVoxel fun ((0,1),(0,2*pi),(0,pi)) (100, 100, 100)
 
 nordstrandQuartic :: Mesh F
 nordstrandQuartic = makeMesh voxel 0

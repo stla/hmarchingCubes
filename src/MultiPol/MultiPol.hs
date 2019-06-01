@@ -1,22 +1,23 @@
+-- {-# LANGUAGE ExistentialQuantification #-}
 module MultiPol.MultiPol
   (evalPoly, derivPoly, fromListOfMonomials, Polynomial(..), Monomial(..))
   where
 
-data Polynomial = M Monomial
-                | Polynomial :+: Polynomial
-                | Polynomial :*: Polynomial
+data Polynomial a = M (Monomial a)
+                | Polynomial a :+: Polynomial a
+                | Polynomial a :*: Polynomial a
                 deriving(Show, Eq)
 
-data Monomial = Monomial {
-        coefficient :: Double,
+data Monomial a = Monomial {
+        coefficient :: a,
         powers      :: (Int,Int,Int)
     }
     deriving(Show, Eq)
 
-zero :: Polynomial
+zero :: RealFloat a => Polynomial a
 zero = M Monomial { coefficient = 0, powers = (0,0,0) }
 
-derivMonomial :: Monomial -> Char -> Polynomial
+derivMonomial :: RealFloat a => Monomial a -> Char -> Polynomial a
 derivMonomial mono var = let (px,py,pz) = powers mono in
   case var of
     'x' -> if px >= 1
@@ -36,23 +37,23 @@ derivMonomial mono var = let (px,py,pz) = powers mono in
       else zero
     _ -> error "only variables x,y,z are allowed"
 
-derivPoly :: Polynomial -> Char -> Polynomial
+derivPoly :: RealFloat a => Polynomial a -> Char -> Polynomial a
 derivPoly pol var = case pol of
   M mono -> derivMonomial mono var
   a :+: b -> derivPoly a var :+: derivPoly b var
   a :*: b -> (derivPoly a var :*: b) :+: (a :*: derivPoly b var)
 
-evalMonomial :: (Double, Double, Double) -> Monomial -> Double
+evalMonomial :: RealFloat a => (a, a, a) -> Monomial a -> a
 evalMonomial (x,y,z) monomial =
   coefficient monomial * x^px * y^py * z^pz
   where
     (px,py,pz) = powers monomial
 
-evalPoly :: Polynomial -> (Double,Double,Double) -> Double
+evalPoly :: RealFloat a => Polynomial a -> (a,a,a) -> a
 evalPoly pol xyz = case pol of
   M mono -> evalMonomial xyz mono
   a :+: b -> evalPoly a xyz + evalPoly b xyz
   a :*: b -> evalPoly a xyz * evalPoly b xyz
 
-fromListOfMonomials :: [Monomial] -> Polynomial
+fromListOfMonomials :: RealFloat a => [Monomial a] -> Polynomial a
 fromListOfMonomials ms = foldl1 (:+:) (map M ms)
