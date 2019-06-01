@@ -25,6 +25,8 @@ library
                      , OpenGL.SpiderCageColored
                      , OpenGL.EndrassOcticVariant
                      , OpenGL.LabsCubic
+                     , MultiPol.MultiPol
+                     , OpenGL.Nordstrand
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector
