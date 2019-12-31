@@ -27,6 +27,7 @@ library
                      , OpenGL.LabsCubic
                      , MultiPol.MultiPol
                      , OpenGL.Nordstrand
+                     , OpenGL.Invader
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector

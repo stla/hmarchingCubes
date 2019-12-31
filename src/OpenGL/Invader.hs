@@ -1,6 +1,7 @@
-module OpenGL.Nordstrand
+module OpenGL.Invader
   (main)
   where
+import           Colors.ColorRamp
 import           Control.Concurrent                (threadDelay)
 import           Control.Monad                     (when)
 import qualified Data.ByteString                   as B
@@ -8,21 +9,16 @@ import           Data.IORef
 import           Data.Vector.Unboxed               (Vector, (!))
 import qualified Data.Vector.Unboxed               as V
 import           Graphics.Rendering.OpenGL.Capture (capturePPM)
-import           Graphics.Rendering.OpenGL.GL
-import           Graphics.UI.GLUT
+import           Graphics.Rendering.OpenGL.GL      hiding (Color)
+import           Graphics.UI.GLUT                  hiding (Color)
 import           MarchingCubes
-import           MultiPol.MultiPol
 import           System.Directory                  (doesDirectoryExist)
 import           System.IO.Unsafe
 import           Text.Printf
 
-white,black,navy,forestgreen,cyan,yellow :: Color4 GLfloat
+white,black :: Color4 GLfloat
 white = Color4 1 1 1 1
 black = Color4 0 0 0 1
-navy = Color4 0 0 0.5 1
-forestgreen = Color4 0.13 0.55 0.13 1
-cyan = Color4 0 1 1 1
-yellow = Color4 1 1 0 1
 
 data Context = Context
     {
@@ -33,87 +29,54 @@ data Context = Context
     }
 
 type F = Float
+type Color = Color4 GLfloat
 
 fun :: XYZ F -> F
-fun (ρ, θ, ϕ) =
-  25*(x3*(y+z)+y3*(x+z)+z3*(x+y)) + 50*(x2*y2+x2*z2+y2*z2) -
-  125*(x2*y*z+y2*x*z+z2*x*y) + 60*x*y*z - 4*(x*y+x*z+y*z)
-  where
-    x = ρ * cos θ * sin ϕ
-    y = ρ * sin θ * sin ϕ
-    z = ρ * cos ϕ
-    x2 = x*x
-    y2 = y*y
-    z2 = z*z
-    x3 = x*x2
-    y3 = y*y2
-    z3 = z*z2
-
-pol :: Polynomial F
-pol = (M (Monomial 25 (0,0,0)) :*:
-  fromListOfMonomials [ Monomial 1 (3,1,0)
-                      , Monomial 1 (3,0,1)
-                      , Monomial 1 (1,3,0)
-                      , Monomial 1 (0,3,1)
-                      , Monomial 1 (1,0,3)
-                      , Monomial 1 (0,1,3)]) :+:
-  (M (Monomial 50 (0,0,0)) :*:
-  fromListOfMonomials [ Monomial 1 (2,2,0)
-                      , Monomial 1 (2,0,2)
-                      , Monomial 1 (0,2,2)]) :+:
-  (M (Monomial (-125) (0,0,0)) :*:
-  fromListOfMonomials [ Monomial 1 (2,1,1)
-                      , Monomial 1 (1,2,1)
-                      , Monomial 1 (1,1,2)]) :+:
-  M (Monomial 60 (1,1,1)) :+:
-  (M (Monomial (-4) (0,0,0)) :*:
-  fromListOfMonomials [ Monomial 1 (1,1,0)
-                      , Monomial 1 (1,0,1)
-                      , Monomial 1 (0,1,1)])
-
-fundx :: XYZ F -> F
-fundx = evalPoly $ derivPoly pol 'x'
-
-fundy :: XYZ F -> F
-fundy = evalPoly $ derivPoly pol 'y'
-
-fundz :: XYZ F -> F
-fundz = evalPoly $ derivPoly pol 'z'
-
-gradient :: XYZ F -> XYZ F
-gradient xyz = (-x/l, -y/l, -z/l)
-  where
-    x = fundx xyz
-    y = fundy xyz
-    z = fundz xyz
-    l = sqrt(x*x + y*y + z*z)
+fun (x,y,z) =
+  cos(4.0*x/(x*x+y*y+z*z+0.2)) * sin(4.0*y/(x*x+y*y+z*z+0.2)) +
+  cos(4.0*y/(x*x+y*y+z*z+0.2)) * sin(4.0*z/(x*x+y*y+z*z+0.2)) +
+  cos(4.0*z/(x*x+y*y+z*z+0.2)) * sin(4.0*x/(x*x+y*y+z*z+0.2)) +
+  exp(0.5*(x*x+y*y+z*z - 0.1))
 
 voxel :: Voxel F
-voxel = makeVoxel fun ((0,1),(0,2*pi),(0,pi)) (150, 150, 150)
+voxel = makeVoxel fun ((-1,1),(-1,1),(-1,1)) (150, 150, 150)
 
-nordstrandQuartic :: Mesh F
-nordstrandQuartic = makeMesh voxel 0
+invader :: Mesh F
+invader = makeMesh voxel 0
 
 vertices :: Vector (XYZ F)
-vertices = V.map (\(ρ,θ,ϕ) -> (ρ * cos θ * sin ϕ, ρ * sin θ * sin ϕ, ρ * cos ϕ))
-                 (fst $ fst nordstrandQuartic)
+vertices = fst $ fst invader
 
 faces :: [[Int]]
-faces = snd $ fst nordstrandQuartic
+faces = snd $ fst invader
 
 normals :: Vector (XYZ F)
-normals = V.map gradient vertices
+normals = snd invader
 
-triangle :: [Int] -> ((XYZ F, XYZ F, XYZ F), (XYZ F, XYZ F, XYZ F))
+funColor :: F -> F -> F -> Color
+funColor dmin dmax d = clrs !! j
+  where
+  clrs = colorRamp "inferno" 256
+  j = floor((d-dmin)*255/(dmax-dmin))
+
+colors :: Vector Color
+colors = V.map (funColor dmin dmax) ds
+  where
+  ds = V.map (\(x,y,_) -> sqrt(x*x+y*y)) vertices
+  dmin = V.minimum ds
+  dmax = V.maximum ds
+
+triangle :: [Int] -> ((XYZ F, XYZ F, XYZ F), (XYZ F, XYZ F, XYZ F), (Color, Color, Color))
 triangle face =
   ( (vertices ! i, vertices ! j, vertices ! k)
-  , (normals ! i, normals ! j, normals ! k))
+  , (normals ! i, normals ! j, normals ! k)
+  , (colors ! i, colors ! j, colors ! k))
   where
     i = face !! 0
     j = face !! 2
     k = face !! 1
 
-triangles :: [((XYZ F, XYZ F, XYZ F), (XYZ F, XYZ F, XYZ F))]
+triangles :: [((XYZ F, XYZ F, XYZ F), (XYZ F, XYZ F, XYZ F), (Color, Color, Color))]
 triangles = map triangle faces
 
 display :: Context -> DisplayCallback
@@ -133,18 +96,15 @@ display context = do
     mapM_ drawTriangle triangles
   swapBuffers
   where
-    drawTriangle ((v1,v2,v3),(n1,n2,n3)) = do
+    drawTriangle ((v1,v2,v3),(n1,n2,n3),(c1,c2,c3)) = do
       normal (toNormal n1)
-      materialDiffuse Front $= navy
-      materialDiffuse Back $= forestgreen
+      materialDiffuse Front $= c1
       vertex (toVertex v1)
       normal (toNormal n2)
-      materialDiffuse Front $= navy
-      materialDiffuse Back $= forestgreen
+      materialDiffuse Front $= c2
       vertex (toVertex v2)
       normal (toNormal n3)
-      materialDiffuse Front $= navy
-      materialDiffuse Back $= forestgreen
+      materialDiffuse Front $= c3
       vertex (toVertex v3)
       where
         toNormal (x,y,z) = Normal3 x y z
@@ -203,21 +163,16 @@ idle anim delay save snapshots rot3 = do
       rot3 $~! (+1)
       _ <- threadDelay d
       postRedisplay Nothing
-    return ()
 
 main :: IO ()
 main = do
   _ <- getArgsAndInitialize
-  _ <- createWindow "Nordstrand quartic"
+  _ <- createWindow "Invader"
   windowSize $= Size 500 500
   initialDisplayMode $= [RGBAMode, DoubleBuffered, WithDepthBuffer]
   clearColor $= white
-  materialAmbient FrontAndBack $= black
-  materialShininess FrontAndBack $= 100
-  materialSpecular Front $= cyan
-  materialSpecular Back $= yellow
+  materialAmbient Front $= black
   lighting $= Enabled
-  lightModelTwoSide $= Enabled
   light (Light 0) $= Enabled
   position (Light 0) $= Vertex4 0 (-100) 0 1
   ambient (Light 0) $= black
@@ -225,6 +180,7 @@ main = do
   specular (Light 0) $= white
   depthFunc $= Just Less
   shadeModel $= Smooth
+  cullFace $= Just Back
   rot1 <- newIORef 0.0
   rot2 <- newIORef 0.0
   rot3 <- newIORef 0.0
@@ -240,7 +196,7 @@ main = do
   snapshots <- newIORef 0
   keyboardCallback $= Just (keyboard rot1 rot2 rot3 zoom anim delay save)
   idleCallback $= Just (idle anim delay save snapshots rot3)
-  putStrLn "*** Nordstrand quartic ***\n\
+  putStrLn "*** Invader ***\n\
         \    To quit, press q.\n\
         \    Scene rotation:\n\
         \        e, r, t, y, u, i\n\
