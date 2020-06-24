@@ -28,6 +28,7 @@ library
                      , MultiPol.MultiPol
                      , OpenGL.Nordstrand
                      , OpenGL.Invader
+                     , OpenGL.Tiger
   build-depends:       base >= 4.7 && < 5
                      , matrix
                      , vector
